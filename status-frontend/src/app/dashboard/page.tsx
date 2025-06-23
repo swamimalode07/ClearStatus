@@ -35,7 +35,7 @@ export default function Dashboard() {
           />
           <select
             value={newStatus}
-            onChange={(e) => setNewStatus(e.target.value as any)}
+            onChange={(e) => setNewStatus(e.target.value as 'Operational' | 'Degraded' | 'Outage')}
             className="border px-2 py-1 rounded"
           >
             <option value="Operational">Operational</option>
