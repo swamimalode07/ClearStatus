@@ -1,12 +1,16 @@
+// ✅ main.go
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/gin-contrib/cors"
-	"github.com/joho/godotenv"
 	"log"
-	"status-backend/db"
-	"status-backend/routes"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+
+	"backend-go/db"
+	"backend-go/routes"
+	"backend-go/middleware"
 )
 
 func main() {
@@ -18,9 +22,16 @@ func main() {
 	db.ConnectDB()
 
 	r := gin.Default()
-	r.Use(cors.Default())
+	r.Use(cors.New(cors.Config{
+	AllowOrigins:     []string{"http://localhost:3000"}, // or your Vercel URL after deploy
+	AllowMethods:     []string{"GET", "POST", "OPTIONS"},
+	AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+	ExposeHeaders:    []string{"Content-Length"},
+	AllowCredentials: true,
+}))
 
 	api := r.Group("/api")
+	api.Use(middleware.AuthMiddleware())
 	{
 		api.GET("/health", func(c *gin.Context) {
 			c.JSON(200, gin.H{"status": "Backend is working!"})
@@ -28,7 +39,6 @@ func main() {
 
 		routes.RegisterServiceRoutes(api)
 		routes.RegisterIncidentRoutes(api)
-
 	}
 
 	r.Run(":8080")

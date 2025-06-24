@@ -1,8 +1,10 @@
 package routes
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
-	"status-backend/db"
+	"backend-go/db"
 )
 
 type Service struct {
@@ -19,7 +21,7 @@ func RegisterServiceRoutes(rg *gin.RouterGroup) {
 func getServices(c *gin.Context) {
 	rows, err := db.DB.Query("SELECT id, name, status FROM services")
 	if err != nil {
-		c.JSON(500, gin.H{"error": "DB error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "DB error"})
 		return
 	}
 	defer rows.Close()
@@ -31,13 +33,13 @@ func getServices(c *gin.Context) {
 			services = append(services, s)
 		}
 	}
-	c.JSON(200, services)
+	c.JSON(http.StatusOK, services)
 }
 
 func createService(c *gin.Context) {
 	var s Service
 	if err := c.BindJSON(&s); err != nil {
-		c.JSON(400, gin.H{"error": "Invalid input"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
 
@@ -47,9 +49,9 @@ func createService(c *gin.Context) {
 	).Scan(&s.ID)
 
 	if err != nil {
-		c.JSON(500, gin.H{"error": "DB insert failed"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert"})
 		return
 	}
 
-	c.JSON(200, s)
+	c.JSON(http.StatusOK, s)
 }

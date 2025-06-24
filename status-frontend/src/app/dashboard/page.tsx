@@ -1,8 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { UserButton, useUser } from '@clerk/nextjs'
+import { UserButton, useUser, useAuth } from '@clerk/nextjs'
 import { Button } from '@/components/ui/button'
+
+// 👉 Change this to your deployed Railway backend when ready
+const API_URL = 'http://localhost:8080'
 
 type Service = {
   id: string
@@ -19,6 +22,7 @@ type Incident = {
 
 export default function Dashboard() {
   const { user } = useUser()
+  const { getToken } = useAuth()
 
   const [services, setServices] = useState<Service[]>([])
   const [incidents, setIncidents] = useState<Incident[]>([])
@@ -27,37 +31,51 @@ export default function Dashboard() {
   const [newIncident, setNewIncident] = useState('')
   const [newStatus, setNewStatus] = useState<'Operational' | 'Degraded' | 'Outage'>('Operational')
 
-  // Fetch services and incidents
   useEffect(() => {
-    fetch('http://localhost:8080/api/services')
-      .then(async (res) => {
-        if (!res.ok) throw new Error(await res.text())
-        return res.json()
-      })
-      .then(setServices)
-      .catch((err) => console.error('❌ Failed to fetch services:', err))
+    const fetchData = async () => {
+      if (!user) return
+      try {
+        const token = await getToken()
+        if (!token) throw new Error('❌ No token from Clerk')
 
-    fetch('http://localhost:8080/api/incidents')
-      .then(async (res) => {
-        if (!res.ok) throw new Error(await res.text())
-        return res.json()
-      })
-      .then(setIncidents)
-      .catch((err) => console.error('❌ Failed to fetch incidents:', err))
-  }, [])
+        const [servicesRes, incidentsRes] = await Promise.all([
+          fetch(`${API_URL}/api/services`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch(`${API_URL}/api/incidents`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ])
 
-  // Add service
+        if (!servicesRes.ok || !incidentsRes.ok) throw new Error('❌ Failed to fetch')
+
+        const servicesData = await servicesRes.json()
+        const incidentsData = await incidentsRes.json()
+
+        setServices(servicesData)
+        setIncidents(incidentsData)
+      } catch (err) {
+        console.error('❌ Fetch error:', err)
+      }
+    }
+
+    fetchData()
+  }, [user, getToken])
+
   const handleAddService = async () => {
     if (!newService.trim()) return
-
     try {
-      const res = await fetch('http://localhost:8080/api/services', {
+      const token = await getToken()
+      if (!token) throw new Error('❌ No token from Clerk')
+
+      const res = await fetch(`${API_URL}/api/services`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ name: newService, status: newStatus }),
       })
-
-      if (!res.ok) throw new Error(await res.text())
 
       const data = await res.json()
       setServices((prev) => [...prev, data])
@@ -67,18 +85,20 @@ export default function Dashboard() {
     }
   }
 
-  // Add incident
   const handleAddIncident = async () => {
     if (!newIncident.trim()) return
-
     try {
-      const res = await fetch('http://localhost:8080/api/incidents', {
+      const token = await getToken()
+      if (!token) throw new Error('❌ No token from Clerk')
+
+      const res = await fetch(`${API_URL}/api/incidents`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ title: newIncident, status: newStatus }),
       })
-
-      if (!res.ok) throw new Error(await res.text())
 
       const data = await res.json()
       setIncidents((prev) => [data, ...prev])
@@ -90,7 +110,6 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-2xl font-bold">Welcome, {user?.firstName}</h1>
@@ -99,9 +118,7 @@ export default function Dashboard() {
         <UserButton afterSignOutUrl="/" />
       </div>
 
-      {/* Controls */}
       <div className="space-y-4 mb-6">
-        {/* Add Service */}
         <div className="flex items-center gap-2">
           <input
             type="text"
@@ -122,7 +139,6 @@ export default function Dashboard() {
           <Button onClick={handleAddService}>+ Add Service</Button>
         </div>
 
-        {/* Add Incident */}
         <div className="flex items-center gap-2">
           <input
             type="text"
@@ -137,7 +153,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Services */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {services.map((s) => (
           <div key={s.id} className="p-4 border rounded-lg">
@@ -147,7 +162,6 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Incidents */}
       <div className="mt-8">
         <h2 className="text-xl font-bold mb-2">Incidents</h2>
         {incidents.map((i) => (

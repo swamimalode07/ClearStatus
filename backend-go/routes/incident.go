@@ -1,9 +1,10 @@
 package routes
 
 import (
+	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"status-backend/db"
+	"backend-go/db"
 )
 
 type Incident struct {
@@ -21,7 +22,7 @@ func RegisterIncidentRoutes(rg *gin.RouterGroup) {
 func getIncidents(c *gin.Context) {
 	rows, err := db.DB.Query("SELECT id, title, status, time FROM incidents ORDER BY time DESC")
 	if err != nil {
-		c.JSON(500, gin.H{"error": "DB error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "DB error"})
 		return
 	}
 	defer rows.Close()
@@ -33,13 +34,13 @@ func getIncidents(c *gin.Context) {
 			incidents = append(incidents, i)
 		}
 	}
-	c.JSON(200, incidents)
+	c.JSON(http.StatusOK, incidents)
 }
 
 func createIncident(c *gin.Context) {
 	var i Incident
 	if err := c.BindJSON(&i); err != nil {
-		c.JSON(400, gin.H{"error": "Invalid input"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
 
@@ -49,9 +50,9 @@ func createIncident(c *gin.Context) {
 	).Scan(&i.ID, &i.Time)
 
 	if err != nil {
-		c.JSON(500, gin.H{"error": "Failed to insert"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert"})
 		return
 	}
 
-	c.JSON(200, i)
+	c.JSON(http.StatusOK, i)
 }

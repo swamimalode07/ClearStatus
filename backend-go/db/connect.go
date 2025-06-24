@@ -2,7 +2,7 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
+	"log"
 	"os"
 
 	_ "github.com/lib/pq"
@@ -11,20 +11,17 @@ import (
 var DB *sql.DB
 
 func ConnectDB() {
+	connStr := os.Getenv("DATABASE_URL")
 	var err error
-	dsn := os.Getenv("DATABASE_URL")
-	if dsn == "" {
-		panic("DATABASE_URL not set")
-	}
-
-	DB, err = sql.Open("postgres", dsn)
+	DB, err = sql.Open("postgres", connStr)
 	if err != nil {
-		panic(err)
+		log.Fatal("❌ Failed to connect to DB:", err)
 	}
 
-	if err = DB.Ping(); err != nil {
-		panic(err)
+	err = DB.Ping()
+	if err != nil {
+		log.Fatal("❌ DB not reachable:", err)
 	}
 
-	fmt.Println("✅ Connected to Railway PostgreSQL")
+	log.Println("✅ Connected to Railway PostgreSQL")
 }
