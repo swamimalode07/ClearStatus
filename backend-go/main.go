@@ -27,6 +27,8 @@ func main() {
 		})
 
 		routes.RegisterServiceRoutes(api)
+		routes.RegisterIncidentRoutes(api)
+
 	}
 
 	r.Run(":8080")
