@@ -7,6 +7,7 @@ import { IncidentTable } from '@/components/incident-table';
 import { Button } from '@/components/ui/button';
 import { IncidentForm } from '@/components/incident-form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { toast } from 'sonner';
 
 const API = 'http://localhost:8080/api';
 
@@ -108,12 +109,14 @@ const IncidentsPage = () => {
       });
       if (!res.ok) throw new Error('Failed to create incident');
       setAddOpen(false);
+      toast.success('Incident created!');
       // Refresh incidents
       const incidentsRes = await fetch(`${API}/incidents`, { headers: { Authorization: `Bearer ${token}` } });
       const incidentsData = await incidentsRes.json();
       setIncidents(Array.isArray(incidentsData) ? incidentsData : []);
     } catch (err: any) {
       setAddError(err.message || 'Unknown error');
+      toast.error('Failed to create incident');
     } finally {
       setAddLoading(false);
     }
@@ -154,12 +157,14 @@ const IncidentsPage = () => {
       if (!res.ok) throw new Error('Failed to update incident');
       setEditOpen(false);
       setSelectedIncident(null);
+      toast.success('Incident updated!');
       // Refresh incidents
       const incidentsRes = await fetch(`${API}/incidents`, { headers: { Authorization: `Bearer ${token}` } });
       const incidentsData = await incidentsRes.json();
       setIncidents(Array.isArray(incidentsData) ? incidentsData : []);
     } catch (err: any) {
       setEditError(err.message || 'Unknown error');
+      toast.error('Failed to update incident');
     } finally {
       setEditLoading(false);
     }
@@ -193,12 +198,14 @@ const IncidentsPage = () => {
       if (!res.ok) throw new Error('Failed to resolve incident');
       setResolveOpen(false);
       setSelectedIncident(null);
+      toast.success('Incident resolved!');
       // Refresh incidents
       const incidentsRes = await fetch(`${API}/incidents`, { headers: { Authorization: `Bearer ${token}` } });
       const incidentsData = await incidentsRes.json();
       setIncidents(Array.isArray(incidentsData) ? incidentsData : []);
     } catch (err: any) {
       setResolveError(err.message || 'Unknown error');
+      toast.error('Failed to resolve incident');
     } finally {
       setResolveLoading(false);
     }
@@ -226,12 +233,14 @@ const IncidentsPage = () => {
       setUpdateOpen(false);
       setSelectedIncident(null);
       setUpdateMessage('');
+      toast.success('Update added!');
       // Refresh incidents
       const incidentsRes = await fetch(`${API}/incidents`, { headers: { Authorization: `Bearer ${token}` } });
       const incidentsData = await incidentsRes.json();
       setIncidents(Array.isArray(incidentsData) ? incidentsData : []);
     } catch (err: any) {
       setUpdateError(err.message || 'Unknown error');
+      toast.error('Failed to add update');
     } finally {
       setUpdateLoading(false);
     }

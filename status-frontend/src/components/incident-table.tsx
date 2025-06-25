@@ -1,6 +1,7 @@
 import React from 'react';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
+import { Pencil, CheckCircle, PlusCircle, List } from 'lucide-react';
 
 interface Service {
   id: string;
@@ -106,18 +107,18 @@ export const IncidentTable: React.FC<IncidentTableProps> = ({
               <td className="px-4 py-2">
                 <div className="flex flex-wrap gap-2">
                   <Button size="sm" variant="outline" onClick={() => onEdit(incident)}>
-                    Edit
+                    <Pencil className="w-4 h-4 mr-1" /> Edit
                   </Button>
                   {!incident.isResolved && (
                     <Button size="sm" variant="default" onClick={() => onResolve(incident)}>
-                      Resolve
+                      <CheckCircle className="w-4 h-4 mr-1" /> Resolve
                     </Button>
                   )}
                   <Button size="sm" variant="ghost" onClick={() => onAddUpdate(incident)}>
-                    Add Update
+                    <PlusCircle className="w-4 h-4 mr-1" /> Add Update
                   </Button>
                   <Button size="sm" variant="secondary" onClick={() => onViewUpdates(incident)}>
-                    View Updates
+                    <List className="w-4 h-4 mr-1" /> View Updates
                   </Button>
                 </div>
               </td>
