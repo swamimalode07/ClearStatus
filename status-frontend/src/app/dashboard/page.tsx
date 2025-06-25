@@ -13,6 +13,8 @@ import { ServiceTable, Service } from '@/components/service-table'
 import { ServiceDialog } from '@/components/service-dialog'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
+import { Navbar } from '@/components/navbar'
+
 const API = 'http://localhost:8080/api'
 
 type Status = 'Operational' | 'Degraded' | 'Outage'
@@ -153,81 +155,84 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-2xl font-bold">Welcome, {user?.firstName}</h1>
-          <p className="text-gray-500">Manage your services here.</p>
-        </div>
-        <div className="flex gap-3 items-center">
-          <OrganizationSwitcher />
-          <UserButton afterSignOutUrl="/" />
-        </div>
-      </div>
-
-      {/* Add Service Button */}
-      <div className="mb-6">
-        <Button onClick={() => setAddOpen(true)}>+ Add Service</Button>
-      </div>
-
-      {/* Error */}
-      {error && <div className="text-red-600 mb-4">{error}</div>}
-
-      {/* Service Table */}
-      <div className="mb-8">
-        <ServiceTable
-          services={services}
-          onEdit={(service) => {
-            setSelected(service)
-            setEditOpen(true)
-          }}
-          onDelete={(service) => {
-            setSelected(service)
-            setDeleteOpen(true)
-          }}
-        />
-        {loading && <div className="text-gray-500 mt-2">Loading...</div>}
-      </div>
-
-      {/* Add Dialog */}
-      <ServiceDialog
-        open={addOpen}
-        onOpenChange={setAddOpen}
-        onSubmit={handleAdd}
-        loading={loading}
-        error={error}
-      />
-
-      {/* Edit Dialog */}
-      <ServiceDialog
-        open={editOpen}
-        onOpenChange={(open) => {
-          setEditOpen(open)
-          if (!open) setSelected(null)
-        }}
-        onSubmit={handleEdit}
-        initialData={selected ? { name: selected.name, status: selected.status } : undefined}
-        loading={loading}
-        error={error}
-      />
-
-      {/* Delete Dialog */}
-      <Dialog open={deleteOpen} onOpenChange={(open) => {
-        setDeleteOpen(open)
-        if (!open) setSelected(null)
-      }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Service</DialogTitle>
-          </DialogHeader>
-          <div>Are you sure you want to delete <b>{selected?.name}</b>?</div>
-          <div className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setDeleteOpen(false)} disabled={loading}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={loading}>Delete</Button>
+    <>
+      <Navbar active="dashboard" />
+      <div className="max-w-4xl mx-auto p-6">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-2xl font-bold">Welcome, {user?.firstName}</h1>
+            <p className="text-gray-500">Manage your services here.</p>
           </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+          <div className="flex gap-3 items-center">
+            <OrganizationSwitcher />
+            <UserButton afterSignOutUrl="/" />
+          </div>
+        </div>
+
+        {/* Add Service Button */}
+        <div className="mb-6">
+          <Button onClick={() => setAddOpen(true)}>+ Add Service</Button>
+        </div>
+
+        {/* Error */}
+        {error && <div className="text-red-600 mb-4">{error}</div>}
+
+        {/* Service Table */}
+        <div className="mb-8">
+          <ServiceTable
+            services={services}
+            onEdit={(service) => {
+              setSelected(service)
+              setEditOpen(true)
+            }}
+            onDelete={(service) => {
+              setSelected(service)
+              setDeleteOpen(true)
+            }}
+          />
+          {loading && <div className="text-gray-500 mt-2">Loading...</div>}
+        </div>
+
+        {/* Add Dialog */}
+        <ServiceDialog
+          open={addOpen}
+          onOpenChange={setAddOpen}
+          onSubmit={handleAdd}
+          loading={loading}
+          error={error}
+        />
+
+        {/* Edit Dialog */}
+        <ServiceDialog
+          open={editOpen}
+          onOpenChange={(open) => {
+            setEditOpen(open)
+            if (!open) setSelected(null)
+          }}
+          onSubmit={handleEdit}
+          initialData={selected ? { name: selected.name, status: selected.status } : undefined}
+          loading={loading}
+          error={error}
+        />
+
+        {/* Delete Dialog */}
+        <Dialog open={deleteOpen} onOpenChange={(open) => {
+          setDeleteOpen(open)
+          if (!open) setSelected(null)
+        }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Service</DialogTitle>
+            </DialogHeader>
+            <div>Are you sure you want to delete <b>{selected?.name}</b>?</div>
+            <div className="flex justify-end gap-2 mt-4">
+              <Button variant="outline" onClick={() => setDeleteOpen(false)} disabled={loading}>Cancel</Button>
+              <Button variant="destructive" onClick={handleDelete} disabled={loading}>Delete</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </>
   )
 }

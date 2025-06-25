@@ -91,7 +91,7 @@ export const IncidentTable: React.FC<IncidentTableProps> = ({
               </td>
               <td className="px-4 py-2">
                 <div className="flex flex-wrap gap-1">
-                  {incident.services.map((svc) => (
+                  {(Array.isArray(incident.services) ? incident.services : []).map((svc) => (
                     <Badge key={svc.id} className="bg-gray-200 text-gray-700 border-gray-300">
                       {svc.name}
                     </Badge>
