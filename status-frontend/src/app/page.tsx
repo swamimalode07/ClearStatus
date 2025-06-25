@@ -58,13 +58,11 @@ export default function Home() {
       {/* Sticky Navbar with shadow on scroll */}
       <nav id="navbar" className="w-full flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b bg-white/80 backdrop-blur z-10 transition-shadow duration-300 sticky top-0">
         <div className="flex items-center gap-2">
-          {/* Modern lively SVG logo for ClearStatus */}
-          <span className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-tr from-gray-900 via-gray-700 to-gray-400 shadow-sm cursor-pointer" tabIndex={0} aria-label="ClearStatus Home">
-            <svg width="28" height="28" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="1.5" y="1.5" width="19" height="19" rx="6" stroke="white" strokeWidth="2.2" fill="#111" />
-              <path d="M6.5 13.5C7.5 11 10.5 11 11.5 13.5C12.5 16 15.5 16 16.5 13.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/>
-              <circle cx="7.5" cy="8.5" r="1.2" fill="#fff"/>
-              <circle cx="14.5" cy="8.5" r="1.2" fill="#fff"/>
+          {/* Minimal checkmark-in-circle logo for ClearStatus */}
+          <span className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white border border-gray-200 shadow-sm cursor-pointer" tabIndex={0} aria-label="ClearStatus Home">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="14" cy="14" r="11" stroke="#222" strokeWidth="2" fill="#fff" />
+              <path d="M9.5 14.5l3 3 6-6" stroke="#222" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
             </svg>
           </span>
           <span className="ml-2 font-semibold text-lg text-gray-900 tracking-tight select-none flex items-center h-10">ClearStatus</span>
@@ -75,9 +73,19 @@ export default function Home() {
          
         </div>
         <div>
-          <Link href="/dashboard">
-            <Button size="sm" className="bg-black text-white hover:bg-gray-900 px-5 py-2 rounded-full font-semibold shadow-none transition-transform duration-200 hover:scale-105">Get Started</Button>
-          </Link>
+          <div className="flex gap-2 items-center">
+            <Link href="/dashboard">
+              <Button size="sm" className="bg-black text-white hover:bg-gray-900 px-5 py-2 rounded-full font-semibold shadow-none transition-transform duration-200 hover:scale-105">Get Started</Button>
+            </Link>
+            <SignedOut>
+              <SignInButton mode="modal">
+                <Button size="sm" variant="outline" className="px-5 py-2 rounded-full font-semibold shadow-none border-gray-300 text-gray-900 bg-white hover:bg-gray-100 transition-transform duration-200 hover:scale-105">Sign in</Button>
+              </SignInButton>
+            </SignedOut>
+            <SignedIn>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
+          </div>
         </div>
       </nav>
       {/* Hero Section */}
