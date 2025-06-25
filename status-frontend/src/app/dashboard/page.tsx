@@ -9,17 +9,13 @@ import {
   OrganizationSwitcher
 } from '@clerk/nextjs'
 import { Button } from '@/components/ui/button'
+import { ServiceTable, Service } from '@/components/service-table'
+import { ServiceDialog } from '@/components/service-dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 const API = 'http://localhost:8080/api'
 
 type Status = 'Operational' | 'Degraded' | 'Outage'
-
-interface Service {
-  id: string
-  name: string
-  status: Status
-  organizationId: string
-}
 
 interface Incident {
   id: string
@@ -36,105 +32,124 @@ export default function Dashboard() {
 
   const [services, setServices] = useState<Service[]>([])
   const [incidents, setIncidents] = useState<Incident[]>([])
-  const [newService, setNewService] = useState('')
-  const [newIncident, setNewIncident] = useState('')
-  const [newStatus, setNewStatus] = useState<Status>('Operational')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [addOpen, setAddOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [selected, setSelected] = useState<Service | null>(null)
 
-// Update your debug useEffect
-useEffect(() => {
-  (async () => {
-    console.log('Current organization:', organization?.id, organization?.name);
-    const token = await getToken({ 
-      template: 'status_jwt',
-      organizationId: organization?.id 
-    });
-    console.log('🏷 raw JWT:', token);
-    if (token) {
-      try {
-        const [, payload] = token.split('.');
-        const decoded = JSON.parse(atob(payload));
-        console.log('📋 decoded JWT claims:', decoded);
-        console.log('🔑 org_id claim:', decoded.org_id);
-        console.log('🔑 Current org in component:', organization?.id);
-      } catch (err) {
-        console.warn('⚠️ Could not decode JWT:', err);
-      }
-    }
-  })();
-}, [getToken, organization]); // Add organization to dependencies
-  // Fetch services and incidents for current org
-  const fetchData = async () => {
+  // Fetch services
+  const fetchServices = async () => {
     if (!organization) return
-const token = await getToken({ 
-  template: 'status_jwt',
-  organizationId: organization?.id // Make sure to pass the current org ID
-});
-
-    if (!token) return
-
+    setLoading(true)
+    setError(null)
     try {
-      const headers = { Authorization: `Bearer ${token}` }
-
-      const [servicesRes, incidentsRes] = await Promise.all([
-        fetch(`${API}/services`, { headers }),
-        fetch(`${API}/incidents`, { headers })
-      ])
-
-      const servicesData = await servicesRes.json()
-      const incidentsData = await incidentsRes.json()
-
-      setServices(Array.isArray(servicesData) ? servicesData : [])
-      setIncidents(Array.isArray(incidentsData) ? incidentsData : [])
-    } catch (error) {
-      console.error('❌ Fetch error:', error)
+      const token = await getToken({
+        template: 'status_jwt',
+        organizationId: organization?.id,
+      })
+      if (!token) throw new Error('No token')
+      const res = await fetch(`${API}/services`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok) throw new Error('Failed to fetch services')
+      const data = await res.json()
+      setServices(Array.isArray(data) ? data : [])
+    } catch (e: any) {
+      setError(e.message || 'Unknown error')
+    } finally {
+      setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchData()
+    fetchServices()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [organization])
 
-  const handleAddService = async () => {
-    if (!newService.trim()) return
-
-const token = await getToken({ 
-  template: 'status_jwt',
-  organizationId: organization?.id 
-});
-    if (!token) return
-
-    await fetch(`${API}/services`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({ name: newService, status: newStatus })
-    })
-
-    setNewService('')
-    fetchData()
+  // Add service
+  const handleAdd = async (input: { name: string; status: Service["status"] }) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const token = await getToken({
+        template: 'status_jwt',
+        organizationId: organization?.id,
+      })
+      if (!token) throw new Error('No token')
+      const res = await fetch(`${API}/services`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(input),
+      })
+      if (!res.ok) throw new Error('Failed to add service')
+      setAddOpen(false)
+      fetchServices()
+    } catch (e: any) {
+      setError(e.message || 'Unknown error')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleAddIncident = async () => {
-    if (!newIncident.trim()) return
-const token = await getToken({ 
-  template: 'status_jwt',
-  organizationId: organization?.id 
-});
-    if (!token) return
+  // Edit service
+  const handleEdit = async (input: { name: string; status: Service["status"] }) => {
+    if (!selected) return
+    setLoading(true)
+    setError(null)
+    try {
+      const token = await getToken({
+        template: 'status_jwt',
+        organizationId: organization?.id,
+      })
+      if (!token) throw new Error('No token')
+      const res = await fetch(`${API}/services/${selected.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(input),
+      })
+      if (!res.ok) throw new Error('Failed to update service')
+      setEditOpen(false)
+      setSelected(null)
+      fetchServices()
+    } catch (e: any) {
+      setError(e.message || 'Unknown error')
+    } finally {
+      setLoading(false)
+    }
+  }
 
-    await fetch(`${API}/incidents`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({ title: newIncident, status: newStatus })
-    })
-
-    setNewIncident('')
-    fetchData()
+  // Delete service
+  const handleDelete = async () => {
+    if (!selected) return
+    setLoading(true)
+    setError(null)
+    try {
+      const token = await getToken({
+        template: 'status_jwt',
+        organizationId: organization?.id,
+      })
+      if (!token) throw new Error('No token')
+      const res = await fetch(`${API}/services/${selected.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok) throw new Error('Failed to delete service')
+      setDeleteOpen(false)
+      setSelected(null)
+      fetchServices()
+    } catch (e: any) {
+      setError(e.message || 'Unknown error')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -151,64 +166,68 @@ const token = await getToken({
         </div>
       </div>
 
-      {/* Add Controls */}
-      <div className="space-y-4 mb-6">
-        {/* Service Form */}
-        <div className="flex gap-2">
-          <input
-            className="border px-2 py-1 rounded"
-            placeholder="New Service"
-            value={newService}
-            onChange={(e) => setNewService(e.target.value)}
-          />
-          <select
-            value={newStatus}
-            onChange={(e) => setNewStatus(e.target.value as Status)}
-            className="border px-2 py-1 rounded"
-          >
-            <option value="Operational">Operational</option>
-            <option value="Degraded">Degraded</option>
-            <option value="Outage">Outage</option>
-          </select>
-          <Button onClick={handleAddService}>+ Add Service</Button>
-        </div>
-
-        {/* Incident Form */}
-        <div className="flex gap-2">
-          <input
-            className="border px-2 py-1 rounded"
-            placeholder="New Incident"
-            value={newIncident}
-            onChange={(e) => setNewIncident(e.target.value)}
-          />
-          <Button variant="destructive" onClick={handleAddIncident}>
-            + Add Incident
-          </Button>
-        </div>
+      {/* Add Service Button */}
+      <div className="mb-6">
+        <Button onClick={() => setAddOpen(true)}>+ Add Service</Button>
       </div>
 
-      {/* Services */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {services.map((s) => (
-          <div key={s.id} className="p-4 border rounded">
-            <h2 className="font-semibold">{s.name}</h2>
-            <p className="text-sm text-muted-foreground">{s.status}</p>
+      {/* Error */}
+      {error && <div className="text-red-600 mb-4">{error}</div>}
+
+      {/* Service Table */}
+      <div className="mb-8">
+        <ServiceTable
+          services={services}
+          onEdit={(service) => {
+            setSelected(service)
+            setEditOpen(true)
+          }}
+          onDelete={(service) => {
+            setSelected(service)
+            setDeleteOpen(true)
+          }}
+        />
+        {loading && <div className="text-gray-500 mt-2">Loading...</div>}
+      </div>
+
+      {/* Add Dialog */}
+      <ServiceDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        onSubmit={handleAdd}
+        loading={loading}
+        error={error}
+      />
+
+      {/* Edit Dialog */}
+      <ServiceDialog
+        open={editOpen}
+        onOpenChange={(open) => {
+          setEditOpen(open)
+          if (!open) setSelected(null)
+        }}
+        onSubmit={handleEdit}
+        initialData={selected ? { name: selected.name, status: selected.status } : undefined}
+        loading={loading}
+        error={error}
+      />
+
+      {/* Delete Dialog */}
+      <Dialog open={deleteOpen} onOpenChange={(open) => {
+        setDeleteOpen(open)
+        if (!open) setSelected(null)
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Service</DialogTitle>
+          </DialogHeader>
+          <div>Are you sure you want to delete <b>{selected?.name}</b>?</div>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setDeleteOpen(false)} disabled={loading}>Cancel</Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={loading}>Delete</Button>
           </div>
-        ))}
-      </div>
-
-      {/* Incidents */}
-      <div className="mt-8">
-        <h2 className="text-xl font-bold mb-2">Incidents</h2>
-        {incidents.map((i) => (
-          <div key={i.id} className="p-3 border rounded mb-2">
-            <strong>{i.status}</strong> – {i.title}{' '}
-            <span className="text-xs text-gray-500">
-              ({new Date(i.time).toLocaleString()})
-            </span>
-          </div>
-        ))}
-      </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
