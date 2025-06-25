@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"encoding/json"
 )
 
 func RegisterServiceRoutes(rg *gin.RouterGroup) {
@@ -65,6 +66,10 @@ func createService(c *gin.Context) {
 
 	log.Println("✅ Service created for org:", input.OrganizationID)
 	c.JSON(http.StatusOK, input)
+
+	// Broadcast SSE
+	msg, _ := json.Marshal(map[string]interface{}{"event": "service_created", "id": input.ID})
+	BroadcastSSE(string(msg))
 }
 
 func updateService(c *gin.Context) {
@@ -102,6 +107,10 @@ func updateService(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"id": id, "name": input.Name, "status": input.Status, "organizationId": orgID})
+
+	// Broadcast SSE
+	msg, _ := json.Marshal(map[string]interface{}{"event": "service_updated", "id": id})
+	BroadcastSSE(string(msg))
 }
 
 func deleteService(c *gin.Context) {
@@ -121,6 +130,10 @@ func deleteService(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"deleted": true, "id": id})
+
+	// Broadcast SSE
+	msg, _ := json.Marshal(map[string]interface{}{"event": "service_deleted", "id": id})
+	BroadcastSSE(string(msg))
 }
 
 func isValidStatus(status string) bool {

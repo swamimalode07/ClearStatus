@@ -27,4 +27,6 @@ CREATE TABLE IF NOT EXISTS incident_updates (
 
 CREATE INDEX IF NOT EXISTS idx_incidents_org ON incidents (organization_id);
 CREATE INDEX IF NOT EXISTS idx_incident_services_incident ON incident_services (incident_id);
-CREATE INDEX IF NOT EXISTS idx_incident_services_service ON incident_services (service_id); 
+CREATE INDEX IF NOT EXISTS idx_incident_services_service ON incident_services (service_id);
+
+     ALTER TABLE incidents ADD COLUMN IF NOT EXISTS is_resolved BOOLEAN NOT NULL DEFAULT FALSE;
