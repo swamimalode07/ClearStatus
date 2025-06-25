@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
@@ -11,10 +11,25 @@ interface Service {
   organizationId: string;
 }
 
+interface Incident {
+  id: string;
+  title: string;
+  description: string;
+  type: string;
+  status: string;
+  isResolved: boolean;
+  organizationId: string;
+  createdAt: string;
+  updatedAt: string;
+  services: Service[];
+  updates: { id: string; message: string; createdAt: string }[];
+}
+
 interface IncidentFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: {
+    id?: string;
     title: string;
     description: string;
     type: string;
@@ -24,6 +39,7 @@ interface IncidentFormProps {
   loading?: boolean;
   error?: string | null;
   services: Service[];
+  initialIncident?: Incident | null;
 }
 
 const INCIDENT_TYPES = [
@@ -47,6 +63,7 @@ export const IncidentForm: React.FC<IncidentFormProps> = ({
   loading,
   error,
   services,
+  initialIncident,
 }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -54,9 +71,32 @@ export const IncidentForm: React.FC<IncidentFormProps> = ({
   const [status, setStatus] = useState('Investigating');
   const [serviceIds, setServiceIds] = useState<string[]>([]);
 
+  useEffect(() => {
+    if (initialIncident) {
+      setTitle(initialIncident.title);
+      setDescription(initialIncident.description);
+      setType(initialIncident.type);
+      setStatus(initialIncident.status);
+      setServiceIds(initialIncident.services.map(s => s.id));
+    } else {
+      setTitle('');
+      setDescription('');
+      setType('incident');
+      setStatus('Investigating');
+      setServiceIds([]);
+    }
+  }, [initialIncident, open]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSubmit({ title, description, type, status, serviceIds });
+    await onSubmit({
+      id: initialIncident?.id,
+      title,
+      description,
+      type,
+      status,
+      serviceIds,
+    });
   };
 
   const handleServiceToggle = (id: string) => {
@@ -65,19 +105,11 @@ export const IncidentForm: React.FC<IncidentFormProps> = ({
     );
   };
 
-  const resetForm = () => {
-    setTitle('');
-    setDescription('');
-    setType('incident');
-    setStatus('Investigating');
-    setServiceIds([]);
-  };
-
   return (
-    <Dialog open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) resetForm(); }}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add Incident / Maintenance</DialogTitle>
+          <DialogTitle>{initialIncident ? 'Edit Incident / Maintenance' : 'Add Incident / Maintenance'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -120,8 +152,8 @@ export const IncidentForm: React.FC<IncidentFormProps> = ({
           </div>
           {error && <div className="text-red-500 text-sm">{error}</div>}
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => { onOpenChange(false); resetForm(); }} disabled={loading}>Cancel</Button>
-            <Button type="submit" variant="default" disabled={loading}>Add</Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>Cancel</Button>
+            <Button type="submit" variant="default" disabled={loading}>{initialIncident ? 'Save' : 'Add'}</Button>
           </div>
         </form>
       </DialogContent>

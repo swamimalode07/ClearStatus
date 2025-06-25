@@ -28,6 +28,7 @@ interface IncidentTableProps {
   onEdit: (incident: Incident) => void;
   onResolve: (incident: Incident) => void;
   onAddUpdate: (incident: Incident) => void;
+  onViewUpdates: (incident: Incident) => void;
 }
 
 export const IncidentTable: React.FC<IncidentTableProps> = ({
@@ -36,6 +37,7 @@ export const IncidentTable: React.FC<IncidentTableProps> = ({
   onEdit,
   onResolve,
   onAddUpdate,
+  onViewUpdates,
 }) => {
   return (
     <div className="overflow-x-auto">
@@ -101,18 +103,23 @@ export const IncidentTable: React.FC<IncidentTableProps> = ({
               <td className="px-4 py-2">
                 {new Date(incident.updatedAt).toLocaleString()}
               </td>
-              <td className="px-4 py-2 space-x-2">
-                <Button size="sm" variant="outline" onClick={() => onEdit(incident)}>
-                  Edit
-                </Button>
-                {!incident.isResolved && (
-                  <Button size="sm" variant="default" onClick={() => onResolve(incident)}>
-                    Resolve
+              <td className="px-4 py-2">
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" variant="outline" onClick={() => onEdit(incident)}>
+                    Edit
                   </Button>
-                )}
-                <Button size="sm" variant="ghost" onClick={() => onAddUpdate(incident)}>
-                  Add Update
-                </Button>
+                  {!incident.isResolved && (
+                    <Button size="sm" variant="default" onClick={() => onResolve(incident)}>
+                      Resolve
+                    </Button>
+                  )}
+                  <Button size="sm" variant="ghost" onClick={() => onAddUpdate(incident)}>
+                    Add Update
+                  </Button>
+                  <Button size="sm" variant="secondary" onClick={() => onViewUpdates(incident)}>
+                    View Updates
+                  </Button>
+                </div>
               </td>
             </tr>
           ))}
