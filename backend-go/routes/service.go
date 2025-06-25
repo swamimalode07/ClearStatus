@@ -143,3 +143,22 @@ func isValidStatus(status string) bool {
 	}
 	return false
 }
+
+// Public GET handler for all services (no auth)
+func PublicGetServices(c *gin.Context) {
+	rows, err := db.DB.Query("SELECT id, name, status, organization_id FROM services")
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to fetch services"})
+		return
+	}
+	defer rows.Close()
+
+	var services []models.Service
+	for rows.Next() {
+		var s models.Service
+		if err := rows.Scan(&s.ID, &s.Name, &s.Status, &s.OrganizationID); err == nil {
+			services = append(services, s)
+		}
+	}
+	c.JSON(200, services)
+}

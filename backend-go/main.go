@@ -39,8 +39,14 @@ func main() {
 
 		routes.RegisterServiceRoutes(api)
 		routes.RegisterIncidentRoutes(api)
-		routes.RegisterStreamRoutes(api)
 	}
+
+	// Register SSE route outside the auth group:
+	routes.RegisterStreamRoutes(r.Group("/api"))
+
+	// Register public GET endpoints for status page
+	r.GET("/api/public/services", routes.PublicGetServices)
+	r.GET("/api/public/incidents", routes.PublicGetIncidents)
 
 	r.Run(":8080")
 }

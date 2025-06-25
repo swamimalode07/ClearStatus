@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { IncidentForm } from '@/components/incident-form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 
 const API = 'http://localhost:8080/api';
 
@@ -55,34 +56,67 @@ const IncidentsPage = () => {
   const [updateMessage, setUpdateMessage] = useState('');
   const [updatesOpen, setUpdatesOpen] = useState(false);
 
+  const fetchData = async () => {
+    if (!organization) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const token = await getToken({
+        template: 'status_jwt',
+        organizationId: organization.id,
+      });
+      if (!token) throw new Error('No token');
+      const [incidentsRes, servicesRes] = await Promise.all([
+        fetch(`${API}/incidents`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API}/services`, { headers: { Authorization: `Bearer ${token}` } }),
+      ]);
+      if (!incidentsRes.ok || !servicesRes.ok) throw new Error('Failed to fetch data');
+      const incidentsData = await incidentsRes.json();
+      const servicesData = await servicesRes.json();
+      setIncidents(Array.isArray(incidentsData) ? incidentsData : []);
+      setServices(Array.isArray(servicesData) ? servicesData : []);
+    } catch (err: any) {
+      setError(err.message || 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      if (!organization) return;
-      setLoading(true);
-      setError(null);
-      try {
-        const token = await getToken({
-          template: 'status_jwt',
-          organizationId: organization.id,
-        });
-        if (!token) throw new Error('No token');
-        const [incidentsRes, servicesRes] = await Promise.all([
-          fetch(`${API}/incidents`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API}/services`, { headers: { Authorization: `Bearer ${token}` } }),
-        ]);
-        if (!incidentsRes.ok || !servicesRes.ok) throw new Error('Failed to fetch data');
-        const incidentsData = await incidentsRes.json();
-        const servicesData = await servicesRes.json();
-        setIncidents(Array.isArray(incidentsData) ? incidentsData : []);
-        setServices(Array.isArray(servicesData) ? servicesData : []);
-      } catch (err: any) {
-        setError(err.message || 'Unknown error');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [organization, getToken]);
+
+  useEffect(() => {
+    if (!organization) return;
+    // SSE connection for real-time updates
+    const sse = new EventSource(`${API}/stream`, { withCredentials: true });
+    sse.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        let msg = '';
+        if (data.event === 'service_created') msg = 'A service was created.';
+        else if (data.event === 'service_updated') msg = 'A service was updated.';
+        else if (data.event === 'service_deleted') msg = 'A service was deleted.';
+        else if (data.event === 'incident_created') msg = 'A new incident was created.';
+        else if (data.event === 'incident_updated') msg = 'An incident was updated.';
+        else if (data.event === 'incident_update_added') msg = 'An incident update was added.';
+        if (msg) toast.info(msg);
+      } catch {}
+      // Always refresh data
+      fetchData();
+    };
+    sse.onerror = () => {
+      sse.close();
+      toast.error('Lost real-time connection. Trying to reconnect...');
+      // Optionally, try to reconnect after a delay
+      setTimeout(() => window.location.reload(), 3000);
+    };
+    return () => {
+      sse.close();
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [organization]);
 
   const handleAddIncident = async (data: {
     title: string;
@@ -337,14 +371,42 @@ const IncidentsPage = () => {
       <Dialog open={updatesOpen} onOpenChange={(open) => { setUpdatesOpen(open); if (!open) setSelectedIncident(null); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Incident Updates</DialogTitle>
+            <DialogTitle>Incident Details & Timeline</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 max-h-96 overflow-y-auto">
-            {selectedIncident && selectedIncident.updates.length > 0 ? (
-              selectedIncident.updates.map((upd) => (
-                <div key={upd.id} className="border rounded p-2 bg-gray-50">
+          {selectedIncident && (
+            <div className="mb-4 space-y-2">
+              <div className="text-lg font-semibold">{selectedIncident.title}</div>
+              <div className="flex flex-wrap gap-2 items-center">
+                <Badge className="bg-gray-100 text-gray-700 border-gray-300">{selectedIncident.type}</Badge>
+                <Badge className={
+                  selectedIncident.status === 'Operational'
+                    ? 'bg-green-100 text-green-800 border-green-300'
+                    : selectedIncident.status === 'Degraded Performance'
+                    ? 'bg-yellow-100 text-yellow-800 border-yellow-300'
+                    : selectedIncident.status === 'Partial Outage'
+                    ? 'bg-orange-100 text-orange-800 border-orange-300'
+                    : 'bg-red-100 text-red-800 border-red-300'
+                }>{selectedIncident.status}</Badge>
+                {selectedIncident.isResolved ? (
+                  <Badge className="bg-green-100 text-green-800 border-green-300">Resolved</Badge>
+                ) : (
+                  <Badge className="bg-red-100 text-red-800 border-red-300">Unresolved</Badge>
+                )}
+              </div>
+              <div className="text-sm text-gray-500">Affected Services: {selectedIncident.services.map(s => s.name).join(', ') || 'None'}</div>
+              <div className="text-xs text-gray-400">Created: {new Date(selectedIncident.createdAt).toLocaleString()}</div>
+              <div className="text-xs text-gray-400">Updated: {new Date(selectedIncident.updatedAt).toLocaleString()}</div>
+              <div className="text-sm mt-2 text-gray-700">{selectedIncident.description}</div>
+            </div>
+          )}
+          <div className="font-semibold mb-2">Timeline</div>
+          <div className="space-y-4 max-h-72 overflow-y-auto border-l-2 border-gray-200 pl-4">
+            {selectedIncident && Array.isArray(selectedIncident.updates) && selectedIncident.updates.length > 0 ? (
+              selectedIncident.updates.map((upd, idx) => (
+                <div key={upd.id} className="relative">
+                  <div className="absolute -left-5 top-1.5 w-3 h-3 rounded-full bg-blue-500 border-2 border-white"></div>
                   <div className="text-xs text-gray-500 mb-1">{new Date(upd.createdAt).toLocaleString()}</div>
-                  <div className="text-sm">{upd.message}</div>
+                  <div className="text-sm bg-gray-50 rounded p-2 border">{upd.message}</div>
                 </div>
               ))
             ) : (
