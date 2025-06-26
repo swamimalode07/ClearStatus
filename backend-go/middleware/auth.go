@@ -59,6 +59,9 @@ log.Printf("🟠 Token: %s", tokenStr) // Be careful with this in production
 log.Printf("Authenticating request for orgID: %s", orgID)
 log.Printf("Full claims: %+v", claims)
 		c.Set("organizationId", orgID)
+		for k, v := range c.Request.Header {
+			log.Println("HEADER:", k, v)
+		}
 		c.Next()
 	}
 }

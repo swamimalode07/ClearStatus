@@ -12,6 +12,7 @@ import (
 	"backend-go/utils"
 	"os"
 	"strings"
+	"time"
 )
 
 func RegisterServiceRoutes(rg *gin.RouterGroup) {
@@ -19,6 +20,7 @@ func RegisterServiceRoutes(rg *gin.RouterGroup) {
 	rg.POST("/services", createService)
 	rg.PUT("/services/:id", updateService)
 	rg.DELETE("/services/:id", deleteService)
+	// rg.GET("/services/:id/uptime", GetServiceUptime)
 }
 
 func getServices(c *gin.Context) {
@@ -67,6 +69,9 @@ func createService(c *gin.Context) {
 		return
 	}
 
+	// Log status history
+	_, _ = db.DB.Exec("INSERT INTO service_status_history (id, service_id, status) VALUES ($1, $2, $3)", uuid.NewString(), input.ID, input.Status)
+
 	// Email notification
 	notifyTo := os.Getenv("SMTP_NOTIFY_TO")
 	if notifyTo != "" {
@@ -104,6 +109,14 @@ func updateService(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid status"})
 		return
 	}
+
+	// Get previous status
+	var prevStatus string
+	err := db.DB.QueryRow("SELECT status FROM services WHERE id=$1 AND organization_id=$2", id, orgID).Scan(&prevStatus)
+	if err != nil {
+		log.Println("❌ Could not fetch previous status:", err)
+	}
+
 	res, err := db.DB.Exec(
 		`UPDATE services SET name=$1, status=$2 WHERE id=$3 AND organization_id=$4`,
 		input.Name, input.Status, id, orgID,
@@ -118,6 +131,12 @@ func updateService(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Service not found or not owned by org"})
 		return
 	}
+
+	// Log status history only if status changed
+	if prevStatus != input.Status {
+		_, _ = db.DB.Exec("INSERT INTO service_status_history (id, service_id, status) VALUES ($1, $2, $3)", uuid.NewString(), id, input.Status)
+	}
+
 	c.JSON(http.StatusOK, gin.H{"id": id, "name": input.Name, "status": input.Status, "organizationId": orgID})
 
 	// Email notification
@@ -182,4 +201,80 @@ func PublicGetServices(c *gin.Context) {
 		}
 	}
 	c.JSON(200, services)
+}
+
+// getServiceUptime returns uptime percentage for a service over a period (default 7d)
+func GetServiceUptime(c *gin.Context) {
+	serviceID := c.Param("id")
+	period := c.DefaultQuery("period", "7d")
+
+	var duration string
+	switch period {
+	case "1d":
+		duration = "1 day"
+	case "30d":
+		duration = "30 days"
+	default:
+		duration = "7 days"
+	}
+
+	// Get all status changes for the service in the period, ordered by changed_at
+	rows, err := db.DB.Query(`SELECT status, changed_at FROM service_status_history WHERE service_id = $1 AND changed_at >= now() - INTERVAL '`+duration+`' ORDER BY changed_at ASC`, serviceID)
+	if err != nil {
+		log.Println("❌ DB error in GetServiceUptime:", err)
+		c.JSON(500, gin.H{"error": "Failed to fetch status history", "details": err.Error()})
+		return
+	}
+	defer rows.Close()
+
+	type statusPoint struct {
+		Status    string
+		ChangedAt string
+	}
+	var history []statusPoint
+	for rows.Next() {
+		var s statusPoint
+		var t time.Time
+		if err := rows.Scan(&s.Status, &t); err == nil {
+			s.ChangedAt = t.Format(time.RFC3339)
+			history = append(history, s)
+		}
+	}
+
+	// If no history, return 100% uptime (assume always up)
+	if len(history) == 0 {
+		c.JSON(200, gin.H{"uptime": 100.0, "history": history})
+		return
+	}
+
+	// Calculate uptime percentage
+	// Assume 'Operational' is up, anything else is down
+	var (
+		total float64
+		uptime float64
+	)
+	end := time.Now()
+	for i, h := range history {
+		var next time.Time
+		if i+1 < len(history) {
+			next, _ = time.Parse(time.RFC3339, history[i+1].ChangedAt)
+		} else {
+			next = end
+		}
+		start, _ := time.Parse(time.RFC3339, h.ChangedAt)
+		delta := next.Sub(start).Seconds()
+		total += delta
+		if h.Status == "Operational" {
+			uptime += delta
+		}
+	}
+	percent := 100.0
+	if total > 0 {
+		percent = (uptime / total) * 100.0
+	}
+
+	c.JSON(200, gin.H{
+		"uptime": percent,
+		"history": history,
+	})
 }

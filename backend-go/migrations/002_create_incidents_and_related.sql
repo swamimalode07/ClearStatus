@@ -25,8 +25,17 @@ CREATE TABLE IF NOT EXISTS incident_updates (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS service_status_history (
+    id UUID PRIMARY KEY,
+    service_id UUID REFERENCES services(id) ON DELETE CASCADE,
+    status TEXT NOT NULL,
+    changed_at TIMESTAMPTZ DEFAULT now()
+);
+
 CREATE INDEX IF NOT EXISTS idx_incidents_org ON incidents (organization_id);
 CREATE INDEX IF NOT EXISTS idx_incident_services_incident ON incident_services (incident_id);
 CREATE INDEX IF NOT EXISTS idx_incident_services_service ON incident_services (service_id);
+CREATE INDEX IF NOT EXISTS idx_service_status_history_service ON service_status_history (service_id);
+CREATE INDEX IF NOT EXISTS idx_service_status_history_changed_at ON service_status_history (changed_at);
 
-     ALTER TABLE incidents ADD COLUMN IF NOT EXISTS is_resolved BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS is_resolved BOOLEAN NOT NULL DEFAULT FALSE;

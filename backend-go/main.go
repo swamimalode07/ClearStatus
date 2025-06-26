@@ -49,5 +49,7 @@ func main() {
 	r.GET("/api/public/services", routes.PublicGetServices)
 	r.GET("/api/public/incidents", routes.PublicGetIncidents)
 
+	r.GET("/api/services/:id/uptime", routes.GetServiceUptime)
+
 	r.Run(":8080")
 }
