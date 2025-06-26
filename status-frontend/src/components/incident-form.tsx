@@ -77,7 +77,7 @@ export const IncidentForm: React.FC<IncidentFormProps> = ({
       setDescription(initialIncident.description);
       setType(initialIncident.type);
       setStatus(initialIncident.status);
-      setServiceIds(initialIncident.services.map(s => s.id));
+      setServiceIds(Array.isArray(initialIncident.services) ? initialIncident.services.map(s => s.id) : []);
     } else {
       setTitle('');
       setDescription('');

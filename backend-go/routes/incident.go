@@ -10,6 +10,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"encoding/json"
+	"backend-go/utils"
+	"os"
+	"strings"
 )
 
 func RegisterIncidentRoutes(rg *gin.RouterGroup) {
@@ -85,6 +88,15 @@ func createIncident(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"id": id})
 
+	// Email notification
+	notifyTo := os.Getenv("SMTP_NOTIFY_TO")
+	if notifyTo != "" {
+		to := strings.Split(notifyTo, ",")
+		subject := "[StatusPage] New Incident: " + input.Title
+		body := "Incident '" + input.Title + "' was created. Status: " + input.Status + "\nDescription: " + input.Description
+		_ = utils.SendEmail(to, subject, body)
+	}
+
 	// Broadcast SSE
 	msg, _ := json.Marshal(map[string]interface{}{"event": "incident_created", "id": id})
 	BroadcastSSE(string(msg))
@@ -119,6 +131,15 @@ func updateIncident(c *gin.Context) {
 		_, _ = db.DB.Exec(`INSERT INTO incident_services (incident_id, service_id) VALUES ($1, $2)`, id, sid)
 	}
 	c.JSON(http.StatusOK, gin.H{"id": id})
+
+	// Email notification
+	notifyTo := os.Getenv("SMTP_NOTIFY_TO")
+	if notifyTo != "" {
+		to := strings.Split(notifyTo, ",")
+		subject := "[StatusPage] Incident Updated: " + input.Title
+		body := "Incident '" + input.Title + "' was updated. New status: " + input.Status + "\nDescription: " + input.Description
+		_ = utils.SendEmail(to, subject, body)
+	}
 
 	// Broadcast SSE
 	msg, _ := json.Marshal(map[string]interface{}{"event": "incident_updated", "id": id})

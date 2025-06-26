@@ -9,6 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"encoding/json"
+	"backend-go/utils"
+	"os"
+	"strings"
 )
 
 func RegisterServiceRoutes(rg *gin.RouterGroup) {
@@ -64,6 +67,15 @@ func createService(c *gin.Context) {
 		return
 	}
 
+	// Email notification
+	notifyTo := os.Getenv("SMTP_NOTIFY_TO")
+	if notifyTo != "" {
+		to := strings.Split(notifyTo, ",")
+		subject := "[StatusPage] New Service Created: " + input.Name
+		body := "Service '" + input.Name + "' was created with status: " + input.Status
+		_ = utils.SendEmail(to, subject, body)
+	}
+
 	log.Println("✅ Service created for org:", input.OrganizationID)
 	c.JSON(http.StatusOK, input)
 
@@ -107,6 +119,15 @@ func updateService(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"id": id, "name": input.Name, "status": input.Status, "organizationId": orgID})
+
+	// Email notification
+	notifyTo := os.Getenv("SMTP_NOTIFY_TO")
+	if notifyTo != "" {
+		to := strings.Split(notifyTo, ",")
+		subject := "[StatusPage] Service Updated: " + input.Name
+		body := "Service '" + input.Name + "' was updated. New status: " + input.Status
+		_ = utils.SendEmail(to, subject, body)
+	}
 
 	// Broadcast SSE
 	msg, _ := json.Marshal(map[string]interface{}{"event": "service_updated", "id": id})
