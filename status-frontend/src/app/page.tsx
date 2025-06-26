@@ -56,46 +56,76 @@ export default function Home() {
   return (
     <div className="relative min-h-screen flex flex-col bg-white">
       {/* Sticky Navbar with shadow on scroll */}
-      <nav id="navbar" className="w-full flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b bg-white/80 backdrop-blur z-10 transition-shadow duration-300 sticky top-0">
-        <div className="flex items-center gap-2">
-          {/* Minimal checkmark-in-circle logo for ClearStatus */}
-          <span className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white border border-gray-200 shadow-sm cursor-pointer" tabIndex={0} aria-label="ClearStatus Home">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="14" cy="14" r="11" stroke="#222" strokeWidth="2" fill="#fff" />
-              <path d="M9.5 14.5l3 3 6-6" stroke="#222" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-            </svg>
-          </span>
-          <span className="ml-2 font-semibold text-lg text-gray-900 tracking-tight select-none flex items-center h-10">ClearStatus</span>
-        </div>
-        <div className="hidden md:flex gap-8 text-sm font-medium text-gray-700">
-          <a href="#features" className="hover:text-black transition-colors">Features</a>
-          <a
-  href="https://youtu.be/MzEFeIRJ0eQ?si=Ns70xAk6MsLpeiCO"
-  target="_blank"
-  rel="noopener noreferrer"
-  className="hover:text-black transition-colors"
->
-  How it Works
-</a>
+      <nav id="navbar" className="w-full flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 sm:py-4 border-b bg-white/80 backdrop-blur z-10 transition-shadow duration-300 sticky top-0">
+  <div className="flex items-center gap-2 min-w-0">
+    {/* Minimal checkmark-in-circle logo for ClearStatus */}
+    <span 
+      className="inline-flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-white border border-gray-200 shadow-sm cursor-pointer flex-shrink-0" 
+      tabIndex={0} 
+      aria-label="ClearStatus Home"
+    >
+      <svg width="20" height="20" className="sm:w-7 sm:h-7" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="14" cy="14" r="11" stroke="#222" strokeWidth="2" fill="#fff" />
+        <path d="M9.5 14.5l3 3 6-6" stroke="#222" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      </svg>
+    </span>
+    <span className="ml-1 sm:ml-2 font-semibold text-base sm:text-lg text-gray-900 tracking-tight select-none flex items-center h-8 sm:h-10 truncate">
+      ClearStatus
+    </span>
+  </div>
 
-         
-        </div>
-        <div>
-          <div className="flex gap-2 items-center">
-            <Link href="/dashboard">
-              <Button size="sm" className="bg-black text-white hover:bg-gray-900 px-5 py-2 rounded-full font-semibold shadow-none transition-transform duration-200 hover:scale-105">Get Started</Button>
-            </Link>
-            <SignedOut>
-              <SignInButton mode="modal">
-                <Button size="sm" variant="outline" className="px-5 py-2 rounded-full font-semibold shadow-none border-gray-300 text-gray-900 bg-white hover:bg-gray-100 transition-transform duration-200 hover:scale-105">Sign in</Button>
-              </SignInButton>
-            </SignedOut>
-            <SignedIn>
-              <UserButton afterSignOutUrl="/" />
-            </SignedIn>
-          </div>
-        </div>
-      </nav>
+  {/* Desktop Navigation - Hidden on mobile */}
+  <div className="hidden lg:flex gap-8 text-sm font-medium text-gray-700">
+    <a href="#features" className="hover:text-black transition-colors">Features</a>
+    <a
+      href="https://youtu.be/MzEFeIRJ0eQ?si=Ns70xAk6MsLpeiCO"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="hover:text-black transition-colors"
+    >
+      How it Works
+    </a>
+  </div>
+
+  {/* Action Buttons */}
+  <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+    <Link href="/dashboard">
+      <Button 
+        size="sm" 
+        className="bg-black text-white hover:bg-gray-900 px-3 sm:px-5 py-1.5 sm:py-2 rounded-full font-semibold shadow-none transition-transform duration-200 hover:scale-105 text-xs sm:text-sm whitespace-nowrap h-8 sm:h-9"
+      >
+        Get Started
+      </Button>
+    </Link>
+    
+    <SignedOut>
+      <SignInButton mode="modal">
+        <Button 
+          size="sm" 
+          variant="outline" 
+          className="px-3 sm:px-5 py-1.5 sm:py-2 rounded-full font-semibold shadow-none border-gray-300 text-gray-900 bg-white hover:bg-gray-100 transition-transform duration-200 hover:scale-105 text-xs sm:text-sm whitespace-nowrap h-8 sm:h-9"
+        >
+          Sign in
+        </Button>
+      </SignInButton>
+    </SignedOut>
+    
+    <SignedIn>
+      <div className="flex items-center justify-center h-8 sm:h-9 w-8 sm:w-9">
+        <UserButton 
+          afterSignOutUrl="/" 
+          appearance={{
+            elements: {
+              avatarBox: "w-8 h-8 sm:w-9 sm:h-9",
+              userButtonPopoverCard: "shadow-lg border",
+              userButtonPopoverActionButton: "hover:bg-gray-50"
+            }
+          }}
+        />
+      </div>
+    </SignedIn>
+  </div>
+</nav>
       {/* Hero Section */}
       <main className="flex-1 flex flex-col items-center justify-center px-2 sm:px-4 py-12 md:py-20 lg:py-24 bg-white relative fade-in-page">
         <div className="flex flex-col items-center w-full max-w-xl md:max-w-2xl mx-auto">
@@ -213,7 +243,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="w-full py-5 text-center text-xs text-gray-400 border-t border-gray-200 bg-white/90 mt-auto">
         &copy; {year ? year : ''} ClearStatus. Effortless status pages for SaaS. Built with Next.js &amp; shadcn/ui. {' '}
-        <a href="https://github.com/" className="underline hover:text-gray-600" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/swamimalode07/ClearStatus" className="underline hover:text-gray-600" target="_blank" rel="noopener noreferrer">GitHub</a>
       </footer>
     </div>
   )
