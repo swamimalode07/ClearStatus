@@ -69,7 +69,15 @@ export default function Home() {
         </div>
         <div className="hidden md:flex gap-8 text-sm font-medium text-gray-700">
           <a href="#features" className="hover:text-black transition-colors">Features</a>
-          <a href="#how" className="hover:text-black transition-colors">How it Works</a>
+          <a
+  href="https://youtu.be/MzEFeIRJ0eQ?si=Ns70xAk6MsLpeiCO"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="hover:text-black transition-colors"
+>
+  How it Works
+</a>
+
          
         </div>
         <div>
@@ -101,9 +109,20 @@ export default function Home() {
             <Link href="/dashboard">
               <Button size="lg" className="bg-black text-white hover:bg-gray-900 px-8 py-3 rounded-full font-semibold shadow-none w-full sm:w-auto transition-transform duration-200 hover:scale-105 focus:scale-95">Get Started</Button>
             </Link>
-            <Link href="/demo">
-              <Button size="lg" variant="outline" className="border-gray-300 text-gray-900 bg-white hover:bg-gray-100 px-8 py-3 rounded-full font-semibold w-full sm:w-auto transition-transform duration-200 hover:scale-105 focus:scale-95">Watch Demo</Button>
-            </Link>
+            <a
+  href="https://youtu.be/MzEFeIRJ0eQ?si=Ns70xAk6MsLpeiCO"
+  target="_blank"
+  rel="noopener noreferrer"
+>
+  <Button
+    size="lg"
+    variant="outline"
+    className="border-gray-300 text-gray-900 bg-white hover:bg-gray-100 px-8 py-3 rounded-full font-semibold w-full sm:w-auto transition-transform duration-200 hover:scale-105 focus:scale-95"
+  >
+    Watch Demo
+  </Button>
+</a>
+
           </div>
         </div>
         {/* Service Preview */}
