@@ -91,14 +91,7 @@ export default function Home() {
 
   {/* Action Buttons */}
   <div className="flex items-center gap-1 sm:gap-2 min-w-0">
-    <Link href="/dashboard">
-      <Button 
-        size="sm" 
-        className="bg-black text-white hover:bg-gray-900 px-3 sm:px-5 py-1.5 sm:py-2 rounded-full font-semibold shadow-none transition-transform duration-200 hover:scale-105 text-xs sm:text-sm whitespace-nowrap h-8 sm:h-9"
-      >
-        Get Started
-      </Button>
-    </Link>
+   
     
     <SignedOut>
       <SignInButton mode="modal">
@@ -138,9 +131,21 @@ export default function Home() {
             Communicate incidents, maintenance, and uptime in real time. Multi-tenant, beautiful, and reliable. Keep your users informed and build trust with a modern, customizable status page for your product.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center w-full mb-10 animate-fade-in-up" style={{ animationDelay: '0.4s', animationFillMode: 'both' }}>
-            <Link href="/dashboard">
-              <Button size="lg" className="bg-black text-white hover:bg-gray-900 px-8 py-3 rounded-full font-semibold shadow-none w-full sm:w-auto transition-transform duration-200 hover:scale-105 focus:scale-95">Get Started</Button>
-            </Link>
+          <SignedIn>
+  <Link href="/dashboard">
+    <Button size="lg" className="bg-black text-white hover:bg-gray-900 px-8 py-3 rounded-full font-semibold shadow-none w-full sm:w-auto transition-transform duration-200 hover:scale-105 focus:scale-95">
+      Get Started
+    </Button>
+  </Link>
+</SignedIn>
+<SignedOut>
+  <SignInButton mode="modal">
+    <Button size="lg" className="bg-black text-white hover:bg-gray-900 px-8 py-3 rounded-full font-semibold shadow-none w-full sm:w-auto transition-transform duration-200 hover:scale-105 focus:scale-95">
+      Get Started
+    </Button>
+  </SignInButton>
+</SignedOut>
+
             <a
   href="https://youtu.be/MzEFeIRJ0eQ?si=Ns70xAk6MsLpeiCO"
   target="_blank"
