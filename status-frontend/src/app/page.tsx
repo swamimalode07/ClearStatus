@@ -13,6 +13,8 @@ import { Navbar } from '@/components/navbar'
 import Image from "next/image"
 import { useEffect, useState } from 'react'
 
+
+
 const mockServices = [
   { name: 'Website', status: 'Operational' as const },
   { name: 'API', status: 'Degraded' as const },
