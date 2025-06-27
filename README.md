@@ -6,9 +6,6 @@
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-black)](https://github.com/swamimalode07/ClearStatus)
 [![Video](https://img.shields.io/badge/Walkthrough-Loom-orange)](https://www.loom.com/share/2fc347bb089741e090953ed41dd7a628)
 
-## Overview
-
-ClearStatus is a production-grade status page platform inspired by industry leaders like BetterStack, Cachet, and Atlassian StatusPage. It provides organizations with comprehensive service monitoring, incident management, and public-facing status communication tools.
 
 ### Key Capabilities
 
@@ -141,10 +138,7 @@ Both platforms require proper environment variable configuration matching the lo
 - **Authentication**: Use any email (OTP sent) or Google sign-in
 - **Public Status**: Access organization status pages without authentication
 
-### Health Check API
-```bash
-curl https://clearstatus-production.up.railway.app/api/external/health
-```
+
 
 ## Development Highlights
 
@@ -154,28 +148,7 @@ curl https://clearstatus-production.up.railway.app/api/external/health
 - **Production-Ready**: Clean architecture with separation of concerns
 - **Developer Experience**: Comprehensive tooling and clear code structure
 
-## Contributing
 
-We welcome contributions! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-For major changes, please open an issue first to discuss the proposed changes.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Contact
-
-**Swami Malode**
-- Portfolio: [Your Portfolio URL]
-- GitHub: [@swamimalode07](https://github.com/swamimalode07)
-- LinkedIn: [Your LinkedIn Profile]
 
 ---
 
