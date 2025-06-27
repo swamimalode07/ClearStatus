@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Navbar } from '@/components/navbar'
 
-const API = 'http://localhost:8080/api';
+const API = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080') + '/api';
 
 // Placeholder types
 interface Service {

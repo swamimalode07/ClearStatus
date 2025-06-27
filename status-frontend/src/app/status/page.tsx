@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Navbar } from '@/components/navbar'
 
-const API = 'http://localhost:8080/api/public';
+const API = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080') + '/api/public';
 
 interface Service {
   id: string;

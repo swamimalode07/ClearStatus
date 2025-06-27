@@ -31,6 +31,8 @@ const statusDot: Record<'Operational' | 'Degraded' | 'Outage', string> = {
   Outage: 'bg-red-500',
 }
 
+const API = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080') + '/api'
+
 export default function Home() {
   // Fix hydration mismatch: use client-side year
   const [year, setYear] = useState<number | null>(null);

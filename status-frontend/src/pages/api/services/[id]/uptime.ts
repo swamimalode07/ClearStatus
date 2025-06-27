@@ -14,7 +14,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query;
   const period = req.query.period || '7d';
-  const backendUrl = `http://localhost:8080/api/services/${id}/uptime?period=${period}`;
+  const backendUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/services/${id}/uptime?period=${period}`;
 
   try {
     const response = await fetch(backendUrl, {
