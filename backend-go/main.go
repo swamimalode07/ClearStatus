@@ -15,9 +15,9 @@ import (
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("❌Error loading .env file")
+	// Try to load .env for local dev, but don't crash if missing (Railway uses env vars)
+	if err := godotenv.Load(); err != nil {
+		log.Println("⚠️  No .env file found (this is normal in production)")
 	}
 
 	db.ConnectDB()
