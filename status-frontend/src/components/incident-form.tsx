@@ -70,6 +70,7 @@ export const IncidentForm: React.FC<IncidentFormProps> = ({
   const [type, setType] = useState('incident');
   const [status, setStatus] = useState('Investigating');
   const [serviceIds, setServiceIds] = useState<string[]>([]);
+  const [fieldError, setFieldError] = useState<string | null>(null);
 
   useEffect(() => {
     if (initialIncident) {
@@ -89,16 +90,24 @@ export const IncidentForm: React.FC<IncidentFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setFieldError(null);
     // Validate that at least one service is selected
     if (serviceIds.length === 0) {
       return; // Don't submit if no services are selected
     }
-    
+    // Validate that title and description are not empty or just whitespace
+    if (!title.trim()) {
+      setFieldError('Title cannot be empty or just spaces.');
+      return;
+    }
+    if (!description.trim()) {
+      setFieldError('Description cannot be empty or just spaces.');
+      return;
+    }
     await onSubmit({
       id: initialIncident?.id,
-      title,
-      description,
+      title: title.trim(),
+      description: description.trim(),
       type,
       status,
       serviceIds,
@@ -163,7 +172,7 @@ export const IncidentForm: React.FC<IncidentFormProps> = ({
               </div>
             )}
           </div>
-          {error && <div className="text-red-500 text-sm">{error}</div>}
+          {fieldError && <div className="text-red-500 text-sm">{fieldError}</div>}
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>Cancel</Button>
             <Button 
