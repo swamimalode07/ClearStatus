@@ -89,6 +89,12 @@ export const IncidentForm: React.FC<IncidentFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate that at least one service is selected
+    if (serviceIds.length === 0) {
+      return; // Don't submit if no services are selected
+    }
+    
     await onSubmit({
       id: initialIncident?.id,
       title,
@@ -135,7 +141,9 @@ export const IncidentForm: React.FC<IncidentFormProps> = ({
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Affected Services</label>
+            <label className="block text-sm font-medium mb-1">
+              Affected Services <span className="text-red-500">*</span>
+            </label>
             <div className="flex flex-wrap gap-2">
               {services.map(svc => (
                 <label key={svc.id} className="flex items-center gap-1 text-sm">
@@ -149,11 +157,22 @@ export const IncidentForm: React.FC<IncidentFormProps> = ({
                 </label>
               ))}
             </div>
+            {serviceIds.length === 0 && (
+              <div className="text-red-500 text-sm mt-1">
+                Please select at least one affected service
+              </div>
+            )}
           </div>
           {error && <div className="text-red-500 text-sm">{error}</div>}
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>Cancel</Button>
-            <Button type="submit" variant="default" disabled={loading}>{initialIncident ? 'Save' : 'Add'}</Button>
+            <Button 
+              type="submit" 
+              variant="default" 
+              disabled={loading || serviceIds.length === 0}
+            >
+              {initialIncident ? 'Save' : 'Add'}
+            </Button>
           </div>
         </form>
       </DialogContent>
