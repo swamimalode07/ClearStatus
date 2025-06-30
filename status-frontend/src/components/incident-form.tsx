@@ -135,7 +135,7 @@ export const IncidentForm: React.FC<IncidentFormProps> = ({
             <label className="block text-sm font-medium mb-1">Description</label>
             <Textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} disabled={loading} />
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-4">   
             <div className="flex-1">
               <label className="block text-sm font-medium mb-1">Type</label>
               <select className="w-full border rounded px-2 py-1" value={type} onChange={e => setType(e.target.value)} disabled={loading}>
@@ -150,7 +150,7 @@ export const IncidentForm: React.FC<IncidentFormProps> = ({
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">
+            <label className="block text-sm font-medium mb-2">
               Affected Services <span className="text-red-500">*</span>
             </label>
             <div className="flex flex-wrap gap-2">
