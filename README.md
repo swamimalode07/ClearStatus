@@ -4,7 +4,7 @@
 
 [![Demo](https://img.shields.io/badge/Live%20Demo-clearstatus.vercel.app-blue)](https://clearstatus.vercel.app)
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-black)](https://github.com/swamimalode07/ClearStatus)
-[![Video](https://img.shields.io/badge/Walkthrough-Loom-orange)](https://www.loom.com/share/2fc347bb089741e090953ed41dd7a628)
+
 
 
 ### Key Capabilities
@@ -155,3 +155,4 @@ Both platforms require proper environment variable configuration matching the lo
 <div align="center">
   <strong>Built with ❤️ for the developer community</strong>
 </div>
+
